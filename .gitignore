@@ -1,0 +1,23 @@
+# 临时工具链（项目落地后统一删除）
+.toolchain/
+
+# 机器相关配置
+local.properties
+
+# Gradle 构建产物
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# Python 缓存
+__pycache__/
+*.pyc
+
