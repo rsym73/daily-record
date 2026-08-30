@@ -25,7 +25,7 @@ fun WallpaperBackground(file: File?, generation: Long, content: @Composable () -
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
-                Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)))
+                Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.3f)))
             }
         }
         content()
