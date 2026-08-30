@@ -3,6 +3,7 @@ package com.dailyrecord.app
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -31,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,9 +48,48 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private var screen by mutableStateOf(Screen.Today)
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
+
+    private val exportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            val app = applicationContext as RecordApplication
+            lifecycleScope.launch {
+                try {
+                    val json = app.backupService.exportData()
+                    contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                    Toast.makeText(this@MainActivity, "已导出", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "导出失败：${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private val importLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val app = applicationContext as RecordApplication
+            lifecycleScope.launch {
+                try {
+                    val json = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    if (json != null) {
+                        app.backupService.importData(json)
+                        Toast.makeText(this@MainActivity, "已导入", Toast.LENGTH_SHORT).show()
+                        screen = Screen.Today
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "导入失败：${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +106,6 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme {
-                var screen by remember { mutableStateOf(Screen.Today) }
                 BackHandler(enabled = screen != Screen.Today) {
                     screen = Screen.Today
                 }
@@ -73,6 +113,7 @@ class MainActivity : ComponentActivity() {
                     Screen.Today -> {
                         val vm: MainViewModel = viewModel { MainViewModel(app.repository) }
                         val state by vm.state.collectAsState()
+                        LaunchedEffect(Unit) { vm.refresh() }
                         TodayScreen(
                             state = state,
                             onAdd = vm::addEntry,
@@ -87,11 +128,17 @@ class MainActivity : ComponentActivity() {
                     }
                     Screen.History -> {
                         val historyVm: HistoryViewModel = viewModel { HistoryViewModel(app.repository) }
+                        LaunchedEffect(Unit) { historyVm.refresh() }
                         HistoryScreen(vm = historyVm, onBack = { screen = Screen.Today })
                     }
                     Screen.Settings -> {
                         val settingsVm: SettingsViewModel = viewModel { SettingsViewModel(app, app.repository) }
-                        SettingsScreen(vm = settingsVm, onBack = { screen = Screen.Today })
+                        SettingsScreen(
+                            vm = settingsVm,
+                            onBack = { screen = Screen.Today },
+                            onExport = { exportLauncher.launch("daily-record-backup.json") },
+                            onImport = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
+                        )
                     }
                 }
             }
@@ -143,13 +190,13 @@ fun TodayScreen(
                         value = input,
                         onValueChange = { input = it },
                         modifier = Modifier.weight(1f),
-                        enabled = !state.isCompleted,
+                        enabled = !state.isCompleted && !state.isBroken,
                         label = { Text("我今天做了什么…") },
                     )
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = { onAdd(input); input = "" },
-                        enabled = input.isNotBlank() && !state.isCompleted,
+                        enabled = input.isNotBlank() && !state.isCompleted && !state.isBroken,
                     ) {
                         Text("添加")
                     }

@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,7 +30,12 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
+fun SettingsScreen(
+    vm: SettingsViewModel,
+    onBack: () -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+) {
     val hour by vm.hour.collectAsState()
     val minute by vm.minute.collectAsState()
     val saved by vm.saved.collectAsState()
@@ -82,6 +88,16 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             if (saved) {
                 Spacer(Modifier.height(8.dp))
                 Text("已保存", color = MaterialTheme.colorScheme.primary)
+            }
+
+            Spacer(Modifier.height(32.dp))
+            Text("备份", style = MaterialTheme.typography.titleMedium)
+            Text("导出为 JSON 文件，或从 JSON 文件导入恢复", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            Row {
+                OutlinedButton(onClick = onExport) { Text("导出备份") }
+                Spacer(Modifier.width(12.dp))
+                OutlinedButton(onClick = onImport) { Text("导入备份") }
             }
         }
     }
