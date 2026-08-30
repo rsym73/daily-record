@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,5 +68,16 @@ class BackupServiceTest {
 
         val entries = targetDb.entryDao().getEntriesForDay(LocalDate.of(2024, 1, 1))
         assertEquals(listOf("未完成的条目"), entries.map { it.text })
+    }
+
+    @Test
+    fun `导出 JSON 不含 wallpaper 字样`() = runBlocking {
+        val sourceRepo = RecordRepository(sourceDb.dayDao(), sourceDb.entryDao(), sourceDb.keyValueDao(), zone)
+        sourceRepo.addEntry(at(2024, 1, 1, 9, 0), "今天的条目")
+        sourceRepo.completeToday(at(2024, 1, 1, 10, 0))
+
+        val json = BackupService(sourceDb.dayDao(), sourceDb.entryDao(), sourceDb.keyValueDao()).exportData()
+
+        assertFalse(json.contains("wallpaper"))
     }
 }

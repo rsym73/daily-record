@@ -35,6 +35,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
+    hasWallpaper: Boolean,
+    onPickWallpaper: () -> Unit,
+    onRemoveWallpaper: () -> Unit,
 ) {
     val hour by vm.hour.collectAsState()
     val minute by vm.minute.collectAsState()
@@ -98,6 +101,18 @@ fun SettingsScreen(
                 OutlinedButton(onClick = onExport) { Text("导出备份") }
                 Spacer(Modifier.width(12.dp))
                 OutlinedButton(onClick = onImport) { Text("导入备份") }
+            }
+
+            Spacer(Modifier.height(32.dp))
+            Text("壁纸", style = MaterialTheme.typography.titleMedium)
+            Text("从相册选择背景图，或恢复默认白底", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            Row {
+                OutlinedButton(onClick = onPickWallpaper) { Text("更换壁纸") }
+                if (hasWallpaper) {
+                    Spacer(Modifier.width(12.dp))
+                    OutlinedButton(onClick = onRemoveWallpaper) { Text("恢复默认") }
+                }
             }
         }
     }

@@ -1,12 +1,14 @@
 package com.dailyrecord.app
 
 import android.Manifest
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -49,6 +51,12 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private var screen by mutableStateOf(Screen.Today)
+
+    private var pendingWallpaperUri by mutableStateOf<Uri?>(null)
+
+    private val pickWallpaperLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri -> pendingWallpaperUri = uri }
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -106,39 +114,53 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme {
+                val wallpaperFile by app.wallpaperFile.collectAsState()
                 BackHandler(enabled = screen != Screen.Today) {
                     screen = Screen.Today
                 }
-                when (screen) {
-                    Screen.Today -> {
-                        val vm: MainViewModel = viewModel { MainViewModel(app.repository) }
-                        val state by vm.state.collectAsState()
-                        LaunchedEffect(Unit) { vm.refresh() }
-                        TodayScreen(
-                            state = state,
-                            onAdd = vm::addEntry,
-                            onEdit = vm::editEntry,
-                            onDelete = vm::deleteEntry,
-                            onComplete = vm::completeToday,
-                            onUndo = vm::undoToday,
-                            onReset = vm::reset,
-                            onShowHistory = { screen = Screen.History },
-                            onShowSettings = { screen = Screen.Settings },
-                        )
-                    }
-                    Screen.History -> {
-                        val historyVm: HistoryViewModel = viewModel { HistoryViewModel(app.repository) }
-                        LaunchedEffect(Unit) { historyVm.refresh() }
-                        HistoryScreen(vm = historyVm, onBack = { screen = Screen.Today })
-                    }
-                    Screen.Settings -> {
-                        val settingsVm: SettingsViewModel = viewModel { SettingsViewModel(app, app.repository) }
-                        SettingsScreen(
-                            vm = settingsVm,
-                            onBack = { screen = Screen.Today },
-                            onExport = { exportLauncher.launch("daily-record-backup.json") },
-                            onImport = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
-                        )
+                WallpaperBackground(file = wallpaperFile) {
+                    when (screen) {
+                        Screen.Today -> {
+                            val vm: MainViewModel = viewModel { MainViewModel(app.repository) }
+                            val state by vm.state.collectAsState()
+                            LaunchedEffect(Unit) { vm.refresh() }
+                            TodayScreen(
+                                state = state,
+                                onAdd = vm::addEntry,
+                                onEdit = vm::editEntry,
+                                onDelete = vm::deleteEntry,
+                                onComplete = vm::completeToday,
+                                onUndo = vm::undoToday,
+                                onReset = vm::reset,
+                                onShowHistory = { screen = Screen.History },
+                                onShowSettings = { screen = Screen.Settings },
+                            )
+                        }
+                        Screen.History -> {
+                            val historyVm: HistoryViewModel = viewModel { HistoryViewModel(app.repository) }
+                            LaunchedEffect(Unit) { historyVm.refresh() }
+                            HistoryScreen(vm = historyVm, onBack = { screen = Screen.Today })
+                        }
+                        Screen.Settings -> {
+                            val settingsVm: SettingsViewModel = viewModel { SettingsViewModel(app, app.repository) }
+                            LaunchedEffect(pendingWallpaperUri) {
+                                val u = pendingWallpaperUri ?: return@LaunchedEffect
+                                lifecycleScope.launch {
+                                    contentResolver.openInputStream(u)?.use { app.wallpaperStore.save(it) }
+                                    app.refreshWallpaper()
+                                }
+                                pendingWallpaperUri = null
+                            }
+                            SettingsScreen(
+                                vm = settingsVm,
+                                onBack = { screen = Screen.Today },
+                                onExport = { exportLauncher.launch("daily-record-backup.json") },
+                                onImport = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
+                                hasWallpaper = wallpaperFile != null,
+                                onPickWallpaper = { pickWallpaperLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                                onRemoveWallpaper = { app.wallpaperStore.remove(); app.refreshWallpaper() },
+                            )
+                        }
                     }
                 }
             }

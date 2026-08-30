@@ -5,6 +5,10 @@ import androidx.room.Room
 import com.dailyrecord.app.data.AppDatabase
 import com.dailyrecord.app.data.BackupService
 import com.dailyrecord.app.data.RecordRepository
+import com.dailyrecord.app.data.WallpaperStore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import java.io.File
 import java.time.ZoneId
 
 class RecordApplication : Application() {
@@ -24,5 +28,14 @@ class RecordApplication : Application() {
 
     val backupService: BackupService by lazy {
         BackupService(database.dayDao(), database.entryDao(), database.keyValueDao())
+    }
+
+    val wallpaperStore by lazy { WallpaperStore(filesDir) }
+
+    private val _wallpaperFile by lazy { MutableStateFlow(wallpaperStore.wallpaperFile()) }
+    val wallpaperFile: StateFlow<File?> get() = _wallpaperFile
+
+    fun refreshWallpaper() {
+        _wallpaperFile.value = wallpaperStore.wallpaperFile()
     }
 }
