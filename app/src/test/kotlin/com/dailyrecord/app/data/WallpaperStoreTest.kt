@@ -51,7 +51,7 @@ class WallpaperStoreTest {
         assertTrue(store.hasWallpaper())
         val file = store.wallpaperFile()
         assertNotNull(file)
-        assertEquals("wallpaper.jpg", file!!.name)
+        assertEquals("wallpaper", file!!.name)
         assertArrayEquals(bytes, file.readBytes())
     }
 
@@ -65,8 +65,8 @@ class WallpaperStoreTest {
         val file = store.wallpaperFile()
         assertNotNull(file)
         assertArrayEquals("second-longer-content".toByteArray(Charsets.UTF_8), file!!.readBytes())
-        // filesDir 里名为 wallpaper.jpg 的文件只有一份
-        assertEquals(1, filesDir.listFiles()!!.count { it.name == "wallpaper.jpg" })
+        // filesDir 里名为 wallpaper 的文件只有一份
+        assertEquals(1, filesDir.listFiles()!!.count { it.name == "wallpaper" })
     }
 
     @Test

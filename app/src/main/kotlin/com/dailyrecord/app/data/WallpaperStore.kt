@@ -6,7 +6,7 @@ import java.io.InputStream
 class WallpaperStore(private val filesDir: File) {
 
     private val target: File
-        get() = File(filesDir, "wallpaper.jpg")
+        get() = File(filesDir, "wallpaper")
 
     // 把输入流复制到 File(filesDir, "wallpaper.jpg")，覆盖旧文件；关闭输入流
     fun save(source: InputStream) {
