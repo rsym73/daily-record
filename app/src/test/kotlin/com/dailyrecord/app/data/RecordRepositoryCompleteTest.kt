@@ -123,4 +123,13 @@ class RecordRepositoryCompleteTest {
         assertEquals(23, repo.getReminderHour())
         assertEquals(45, repo.getReminderMinute())
     }
+
+    @Test
+    fun `凌晨 0 点 30 分检查的是前一天`() = runBlocking {
+        repo.completeToday(at(2024, 1, 1, 10, 0))
+        // 0:30 时记录页仍是 1 月 1 日（已完成）
+        assertEquals(true, repo.isTodayCompleted(at(2024, 1, 2, 0, 30)))
+        // 1:00 时记录页换成 1 月 2 日（未完成）
+        assertEquals(false, repo.isTodayCompleted(at(2024, 1, 2, 1, 0)))
+    }
 }

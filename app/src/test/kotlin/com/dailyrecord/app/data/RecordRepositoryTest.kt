@@ -166,4 +166,13 @@ class RecordRepositoryTest {
         assertEquals(DeleteResult.Future, result)
         assertEquals(1, dao.getEntriesForDay(future).size)
     }
+
+    @Test
+    fun `断链后添加条目被拒绝为 Locked`() = runBlocking {
+        repo.completeToday(at(2024, 1, 1, 10, 0))
+        // 跳到 1 月 3 日（漏掉 1 月 2 日 → 断链）
+        val result = repo.addEntry(at(2024, 1, 3, 10, 0), "新条目")
+        assertEquals(AddEntryResult.Locked, result)
+        assertEquals(0, dao.getEntriesForDay(jan1.plusDays(2)).size)
+    }
 }

@@ -33,4 +33,14 @@ class DayBoundaryTest {
         assertFalse(isFrozen(day, at(2024, 1, 2, 0, 30), zone))
         assertTrue(isFrozen(day, at(2024, 1, 2, 1, 0), zone))
     }
+
+    @Test
+    fun `跨时区边界一致（UTC）`() {
+        val utc = ZoneId.of("UTC")
+        fun atUtc(y: Int, m: Int, d: Int, h: Int, min: Int) =
+            ZonedDateTime.of(y, m, d, h, min, 0, 0, utc).toInstant()
+
+        assertEquals(LocalDate.of(2024, 1, 1), currentPageDate(atUtc(2024, 1, 2, 0, 30), utc))
+        assertEquals(LocalDate.of(2024, 1, 2), currentPageDate(atUtc(2024, 1, 2, 1, 0), utc))
+    }
 }

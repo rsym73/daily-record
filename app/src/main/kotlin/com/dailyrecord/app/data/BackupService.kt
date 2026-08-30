@@ -14,14 +14,18 @@ class BackupService(
         val root = JSONObject()
         keyValueDao.get("epoch")?.let { root.put("epoch", it) }
 
+        val completedByDay = dayDao.getAllDays().associateBy { it.date }
         val entriesByDay = entryDao.getAllEntries().groupBy { it.dayDate }
+        // 遍历「所有有条目的天 ∪ 所有已完成的天」，避免漏掉未完成天的条目
+        val allDays = (completedByDay.keys + entriesByDay.keys).sorted()
+
         val daysArr = JSONArray()
-        for (day in dayDao.getAllDays()) {
+        for (date in allDays) {
             val dayObj = JSONObject()
-            dayObj.put("date", day.date.toString())
-            dayObj.put("completedAt", day.completedAt.toEpochMilli())
+            dayObj.put("date", date.toString())
+            completedByDay[date]?.let { dayObj.put("completedAt", it.completedAt.toEpochMilli()) }
             val entriesArr = JSONArray()
-            for (e in entriesByDay[day.date].orEmpty()) {
+            for (e in entriesByDay[date].orEmpty()) {
                 entriesArr.put(
                     JSONObject()
                         .put("text", e.text)
@@ -44,8 +48,9 @@ class BackupService(
         for (i in 0 until daysArr.length()) {
             val dayObj = daysArr.getJSONObject(i)
             val date = LocalDate.parse(dayObj.getString("date"))
-            val completedAt = Instant.ofEpochMilli(dayObj.getLong("completedAt"))
-            dayDao.upsert(DayEntity(date, completedAt))
+            if (dayObj.has("completedAt")) {
+                dayDao.upsert(DayEntity(date, Instant.ofEpochMilli(dayObj.getLong("completedAt"))))
+            }
             val entriesArr = dayObj.optJSONArray("entries") ?: JSONArray()
             for (j in 0 until entriesArr.length()) {
                 val eObj = entriesArr.getJSONObject(j)

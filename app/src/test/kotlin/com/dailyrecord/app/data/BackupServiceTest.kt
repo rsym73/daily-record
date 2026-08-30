@@ -55,4 +55,17 @@ class BackupServiceTest {
         val entries = targetDb.entryDao().getEntriesForDay(LocalDate.of(2024, 1, 1))
         assertEquals(listOf("条目一", "条目二"), entries.map { it.text })
     }
+
+    @Test
+    fun `未完成天的条目也能导出导入`() = runBlocking {
+        val sourceRepo = RecordRepository(sourceDb.dayDao(), sourceDb.entryDao(), sourceDb.keyValueDao(), zone)
+        sourceRepo.addEntry(at(2024, 1, 1, 10, 0), "未完成的条目")
+        // 注意：不 completeToday，让 1 月 1 日保持「未完成但有条目」
+
+        val json = BackupService(sourceDb.dayDao(), sourceDb.entryDao(), sourceDb.keyValueDao()).exportData()
+        BackupService(targetDb.dayDao(), targetDb.entryDao(), targetDb.keyValueDao()).importData(json)
+
+        val entries = targetDb.entryDao().getEntriesForDay(LocalDate.of(2024, 1, 1))
+        assertEquals(listOf("未完成的条目"), entries.map { it.text })
+    }
 }

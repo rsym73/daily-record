@@ -18,6 +18,7 @@ class RecordRepository(
     suspend fun addEntry(now: Instant, text: String): AddEntryResult {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return AddEntryResult.Blank
+        if (isBroken(now)) return AddEntryResult.Locked
         if (isTodayCompleted(now)) return AddEntryResult.Completed
         val today = currentPageDate(now, zone)
         entryDao.insert(EntryEntity(dayDate = today, text = trimmed))
@@ -27,21 +28,23 @@ class RecordRepository(
     suspend fun editEntry(now: Instant, id: Long, newText: String): EditResult {
         val trimmed = newText.trim()
         if (trimmed.isEmpty()) return EditResult.Blank
-        if (isTodayCompleted(now)) return EditResult.Completed
         val entry = entryDao.getById(id) ?: return EditResult.NotFound
         if (entry.dayDate != currentPageDate(now, zone)) {
             return if (isFrozen(entry.dayDate, now, zone)) EditResult.Frozen else EditResult.Future
         }
+        if (isBroken(now)) return EditResult.Locked
+        if (isTodayCompleted(now)) return EditResult.Completed
         entryDao.update(entry.copy(text = trimmed))
         return EditResult.Ok
     }
 
     suspend fun deleteEntry(now: Instant, id: Long): DeleteResult {
-        if (isTodayCompleted(now)) return DeleteResult.Completed
         val entry = entryDao.getById(id) ?: return DeleteResult.NotFound
         if (entry.dayDate != currentPageDate(now, zone)) {
             return if (isFrozen(entry.dayDate, now, zone)) DeleteResult.Frozen else DeleteResult.Future
         }
+        if (isBroken(now)) return DeleteResult.Locked
+        if (isTodayCompleted(now)) return DeleteResult.Completed
         entryDao.delete(entry)
         return DeleteResult.Ok
     }
@@ -160,6 +163,7 @@ sealed interface AddEntryResult {
     data object Ok : AddEntryResult
     data object Blank : AddEntryResult
     data object Completed : AddEntryResult
+    data object Locked : AddEntryResult
 }
 
 sealed interface EditResult {
@@ -169,6 +173,7 @@ sealed interface EditResult {
     data object Frozen : EditResult
     data object Future : EditResult
     data object Completed : EditResult
+    data object Locked : EditResult
 }
 
 sealed interface DeleteResult {
@@ -177,6 +182,7 @@ sealed interface DeleteResult {
     data object Frozen : DeleteResult
     data object Future : DeleteResult
     data object Completed : DeleteResult
+    data object Locked : DeleteResult
 }
 
 sealed interface CompleteTodayResult {
