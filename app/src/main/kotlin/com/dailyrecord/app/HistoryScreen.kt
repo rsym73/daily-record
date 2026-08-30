@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,6 +27,7 @@ fun HistoryScreen(vm: HistoryViewModel, onBack: () -> Unit) {
 
     if (state.selectedDate != null) {
         Scaffold(
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = { Text(state.selectedDate.toString()) },
@@ -45,6 +47,7 @@ fun HistoryScreen(vm: HistoryViewModel, onBack: () -> Unit) {
         }
     } else {
         Scaffold(
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = { Text("历史") },
