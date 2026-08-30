@@ -115,11 +115,11 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme {
-                val wallpaperFile by app.wallpaperFile.collectAsState()
+                val wallpaper by app.wallpaper.collectAsState()
                 BackHandler(enabled = screen != Screen.Today) {
                     screen = Screen.Today
                 }
-                WallpaperBackground(file = wallpaperFile) {
+                WallpaperBackground(file = wallpaper.file, generation = wallpaper.generation) {
                     when (screen) {
                         Screen.Today -> {
                             val vm: MainViewModel = viewModel { MainViewModel(app.repository) }
@@ -157,7 +157,7 @@ class MainActivity : ComponentActivity() {
                                 onBack = { screen = Screen.Today },
                                 onExport = { exportLauncher.launch("daily-record-backup.json") },
                                 onImport = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
-                                hasWallpaper = wallpaperFile != null,
+                                hasWallpaper = wallpaper.file != null,
                                 onPickWallpaper = { pickWallpaperLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                                 onRemoveWallpaper = { app.wallpaperStore.remove(); app.refreshWallpaper() },
                             )

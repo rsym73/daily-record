@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.time.ZoneId
 
+data class WallpaperState(val file: File?, val generation: Long)
+
 class RecordApplication : Application() {
 
     val database: AppDatabase by lazy {
@@ -32,10 +34,11 @@ class RecordApplication : Application() {
 
     val wallpaperStore by lazy { WallpaperStore(filesDir) }
 
-    private val _wallpaperFile by lazy { MutableStateFlow(wallpaperStore.wallpaperFile()) }
-    val wallpaperFile: StateFlow<File?> get() = _wallpaperFile
+    private val _wallpaper by lazy { MutableStateFlow(WallpaperState(wallpaperStore.wallpaperFile(), 0L)) }
+    val wallpaper: StateFlow<WallpaperState> get() = _wallpaper
 
     fun refreshWallpaper() {
-        _wallpaperFile.value = wallpaperStore.wallpaperFile()
+        val current = _wallpaper.value
+        _wallpaper.value = WallpaperState(wallpaperStore.wallpaperFile(), current.generation + 1)
     }
 }

@@ -14,10 +14,10 @@ import androidx.compose.ui.layout.ContentScale
 import java.io.File
 
 @Composable
-fun WallpaperBackground(file: File?, content: @Composable () -> Unit) {
+fun WallpaperBackground(file: File?, generation: Long, content: @Composable () -> Unit) {
     Box(Modifier.fillMaxSize()) {
         if (file != null && file.exists()) {
-            val bitmap = remember(file) { BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap() }
+            val bitmap = remember(file, generation) { BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap() }
             if (bitmap != null) {
                 Image(
                     bitmap,
