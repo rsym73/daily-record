@@ -63,7 +63,7 @@ fun SettingsScreen(
     ) { padding ->
         Column(Modifier.padding(padding).padding(16.dp)) {
             Text("最后提醒时间", style = MaterialTheme.typography.titleMedium)
-            Text("每天这个时间提醒（凌晨 1 点边界前），默认 0:30", style = MaterialTheme.typography.bodyMedium)
+            Text("每天这个时间提醒（凌晨 1 点边界前），默认 0:30；当天已完成则不提醒", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
