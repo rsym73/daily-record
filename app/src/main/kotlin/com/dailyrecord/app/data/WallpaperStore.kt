@@ -8,7 +8,7 @@ class WallpaperStore(private val filesDir: File) {
     private val target: File
         get() = File(filesDir, "wallpaper")
 
-    // 把输入流复制到 File(filesDir, "wallpaper.jpg")，覆盖旧文件；关闭输入流
+    // 把输入流复制到 File(filesDir, "wallpaper")，覆盖旧文件；关闭输入流
     fun save(source: InputStream) {
         source.use { input ->
             target.outputStream().use { output ->

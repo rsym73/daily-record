@@ -35,8 +35,8 @@ class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("今天还没记录哦～")
-            .setContentText("去写写今天做了什么吧，不然连续天数会断掉啦 🥺")
+            .setContentTitle("今天还没完成哦～")
+            .setContentText("去完成今天吧，不然会断链啦 🥺")
             .setAutoCancel(true)
             .build()
 

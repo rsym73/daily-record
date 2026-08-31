@@ -27,7 +27,7 @@ fun WallpaperBackground(file: File?, generation: Long, content: @Composable () -
     val reqH = (config.screenHeightDp * density).toInt().coerceAtLeast(1)
 
     Box(Modifier.fillMaxSize()) {
-        val bitmap by produceState<ImageBitmap?>(initialValue = null, file, generation) {
+        val bitmap by produceState<ImageBitmap?>(initialValue = null, file, generation, reqW, reqH) {
             value = if (file != null && file.exists()) {
                 withContext(Dispatchers.IO) { decodeSampled(file, reqW, reqH) }
             } else {

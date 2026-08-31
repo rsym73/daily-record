@@ -66,6 +66,17 @@ android {
     }
 }
 
+// release 必须签名：缺 keystore 时在 assembleRelease 阶段明确报错（不静默产出未签名包），不影响 debug 构建
+tasks.configureEach {
+    if (name == "assembleRelease") {
+        doFirst {
+            if (!rootProject.file("keystore/keystore.properties").exists()) {
+                throw org.gradle.api.GradleException("缺少 keystore/keystore.properties，无法构建签名的 release 包。请恢复签名密钥后重试。")
+            }
+        }
+    }
+}
+
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/google") }
     maven { url = uri("https://maven.aliyun.com/repository/public") }
