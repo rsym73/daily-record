@@ -2,6 +2,14 @@
 
 一个记录「每天做了什么」并追踪**连续完成天数**的 Android 应用。核心是一条严格的规则：**必须每天完成记录**，没完成当天的记录就不能进入下一天；一旦漏掉某天，唯一出路是清除连续天数、重新开始。
 
+## 下载（Release）
+
+- **最新版本**：`v1.0.0`
+- **下载 APK**：<https://github.com/rsym73/daily-record/releases/download/v1.0.0/app-release.apk>
+- 历史版本见 [Releases](https://github.com/rsym73/daily-record/releases)
+
+> 正式包用专用签名密钥（CN=DailyRecord）签名，release 包不可调试。签名密钥与密码仅本地持有，未提交进仓库（见「构建与测试」）。
+
 ## 核心规则
 
 | 概念 | 规则 |
@@ -58,9 +66,14 @@ daily-record/
 # 出 debug APK（app/build/outputs/apk/debug/app-debug.apk）
 ./gradlew :app:assembleDebug
 
+# 出正式签名的 release APK（app/build/outputs/apk/release/app-release.apk）
+./gradlew :app:assembleRelease
+
 # 一键测试（自动使用 .toolchain 里的 JDK）
 pwsh ./run-tests.ps1
 ```
+
+> release 签名依赖本地 `keystore/release.keystore` 与 `keystore/keystore.properties`（均已 gitignore，需自备）。新机器上要发 release，先按「签名密钥」备份重新放置这两个文件，否则 release 会是未签名包。
 
 要求 JDK 17+。Gradle 由 wrapper 自动下载（已指向国内镜像）。
 
