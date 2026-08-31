@@ -8,7 +8,7 @@
 - **下载 APK**：<https://github.com/rsym73/daily-record/releases/download/v1.0.0/app-release.apk>
 - 历史版本见 [Releases](https://github.com/rsym73/daily-record/releases)
 
-> 正式包用专用签名密钥（CN=DailyRecord）签名，release 包不可调试。签名密钥与密码仅本地持有，未提交进仓库（见「构建与测试」）。
+> 正式包用专用签名密钥（CN=DailyRecord）签名，release 包不可调试。签名密钥与密码仅本地持有，未提交进仓库。
 
 ## 核心规则
 
@@ -38,59 +38,3 @@
 - **持久化**：Room（条目、完成天、键值对）
 - **通知**：WorkManager
 - **测试**：JUnit 5（领域）+ Robolectric + 内存 Room（数据层），本地 JVM 即可跑，无需模拟器
-
-## 项目结构
-
-```
-daily-record/
-├── domain/                # 纯 Kotlin 领域引擎（零 Android 依赖）
-│   ├── Time.kt            #   currentPageDate / isFrozen（1 点边界）
-│   └── Chain.kt           #   Chain 链状态机（streak / 断链 / 完成 / 重置）
-├── app/                   # Android 应用
-│   ├── data/              #   Room 实体/DAO + RecordRepository（用例层）+ BackupService
-│   ├── MainActivity.kt    #   导航 + 今天页
-│   ├── HistoryScreen.kt   #   历史日历 + 只读详情
-│   ├── SettingsScreen.kt  #   提醒时间 + 导出/导入
-│   └── ReminderWorker.kt  #   WorkManager 提醒
-├── CONTEXT.md             # 领域词汇表
-├── docs/adr/              # 架构决策记录
-└── .scratch/daily-record/ # PRD + 15 个 issue（已全部 done）
-```
-
-## 构建与测试
-
-```bash
-# 跑全部测试（domain + app，共 50 个）
-./gradlew test
-
-# 出 debug APK（app/build/outputs/apk/debug/app-debug.apk）
-./gradlew :app:assembleDebug
-
-# 出正式签名的 release APK（app/build/outputs/apk/release/app-release.apk）
-./gradlew :app:assembleRelease
-
-# 一键测试（自动使用 .toolchain 里的 JDK）
-pwsh ./run-tests.ps1
-```
-
-> release 签名依赖本地 `keystore/release.keystore` 与 `keystore/keystore.properties`（均已 gitignore，需自备）。新机器上要发 release，先按「签名密钥」备份重新放置这两个文件，否则 release 会是未签名包。
-
-要求 JDK 17+。Gradle 由 wrapper 自动下载（已指向国内镜像）。
-
-## 运行
-
-用 Android Studio 打开项目，或直接安装 debug APK 到设备。首次启动会请求**通知权限**（Android 13+），请允许，否则提醒会静默失败。
-
-## 文档
-
-- [CONTEXT.md](CONTEXT.md) —— 领域词汇表（条目、完成、连续天数、记录页、冻结、断链、重置）
-- [docs/adr/0001-strict-daily-lock.md](docs/adr/0001-strict-daily-lock.md) —— 严格锁架构决策
-- [.scratch/daily-record/PRD.md](.scratch/daily-record/PRD.md) —— 产品需求文档
-- [.scratch/daily-record/issues/](.scratch/daily-record/issues/) —— 15 个实现 issue（验收标准）
-- [domain/README.md](domain/README.md) —— 领域引擎模块接口
-
-## 国内网络说明
-
-- **Maven 依赖**：`maven.google.com` 被墙，AGP/AndroidX/Compose 走阿里云镜像（已在 `settings.gradle.kts` 配好）。
-- **GitHub 推送**：本机直连 `github.com` HTTPS 被墙，改用 **SSH-over-443**（`ssh.github.com:443`），配置在 `~/.ssh/config`。
-- **临时工具链**：`.toolchain/`（JDK + Gradle + Android SDK）仅供本机开发，已 gitignore，项目落地后统一删除；届时改用 Android Studio 自带的 JDK 和 SDK（改 `local.properties` 的 `sdk.dir` 即可）。
