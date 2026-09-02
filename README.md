@@ -6,8 +6,8 @@
 
 ## 下载（Release）
 
-- **最新版本**：`v1.0.0`
-- **下载 APK**：<https://github.com/rsym73/daily-record/releases/download/v1.0.0/app-release.apk>
+- **最新版本**：`v1.0.1`
+- **下载 APK**：<https://github.com/rsym73/daily-record/releases/download/v1.0.1/app-release.apk>
 - 历史版本见 [Releases](https://github.com/rsym73/daily-record/releases)
 
 > 正式包用专用签名密钥（CN=DailyRecord）签名，release 包不可调试。签名密钥与密码仅本地持有，未提交进仓库。
