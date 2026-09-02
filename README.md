@@ -42,5 +42,5 @@
 - **Android 原生**：Kotlin + Jetpack Compose + Material 3
 - **架构**：分层 —— 纯领域引擎 / 数据层（Room）/ 用例层（Repository）/ UI（Compose + ViewModel）
 - **持久化**：Room（条目、完成天、键值对）
-- **通知**：WorkManager
+- **通知**：AlarmManager（系统闹钟直连调度，抗划掉即杀）
 - **测试**：JUnit 5（领域）+ Robolectric + 内存 Room（数据层），本地 JVM 即可跑，无需模拟器
