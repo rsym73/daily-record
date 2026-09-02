@@ -1,9 +1,11 @@
 package com.dailyrecord.app
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -107,7 +109,7 @@ class MainActivity : ComponentActivity() {
         }
         val app = application as RecordApplication
         lifecycleScope.launch {
-            ReminderScheduler.schedule(
+            ReminderAlarmScheduler.schedule(
                 applicationContext,
                 app.repository.getReminderHour(),
                 app.repository.getReminderMinute(),
@@ -160,6 +162,7 @@ class MainActivity : ComponentActivity() {
                                 hasWallpaper = wallpaper.file != null,
                                 onPickWallpaper = { pickWallpaperLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                                 onRemoveWallpaper = { app.wallpaperStore.remove(); app.refreshWallpaper() },
+                                onOpenAppSettings = { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) },
                             )
                         }
                     }

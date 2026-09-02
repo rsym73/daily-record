@@ -1,6 +1,8 @@
 package com.dailyrecord.app.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Duration
 import java.time.ZoneId
@@ -27,5 +29,19 @@ class ReminderLogicTest {
         assertEquals(Duration.ofMinutes(45), ReminderLogic.nextReminderDelay(at(2024, 1, 1, 23, 0), zone, 23, 45))
         // 23:45 → 23:46 时下一次是明天的 23:45（23h59m）
         assertEquals(Duration.ofHours(23).plusMinutes(59), ReminderLogic.nextReminderDelay(at(2024, 1, 1, 23, 46), zone, 23, 45))
+    }
+
+    @Test
+    fun `Android 11 及以下始终用精确闹钟`() {
+        assertTrue(ReminderLogic.shouldUseExactAlarm(24, false))
+        assertTrue(ReminderLogic.shouldUseExactAlarm(30, false))
+    }
+
+    @Test
+    fun `Android 12 及以上按权限决定精确或回退`() {
+        assertTrue(ReminderLogic.shouldUseExactAlarm(31, true))
+        assertFalse(ReminderLogic.shouldUseExactAlarm(31, false))
+        assertTrue(ReminderLogic.shouldUseExactAlarm(34, true))
+        assertFalse(ReminderLogic.shouldUseExactAlarm(34, false))
     }
 }

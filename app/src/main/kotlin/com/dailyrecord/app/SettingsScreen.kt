@@ -39,6 +39,7 @@ fun SettingsScreen(
     hasWallpaper: Boolean,
     onPickWallpaper: () -> Unit,
     onRemoveWallpaper: () -> Unit,
+    onOpenAppSettings: () -> Unit,
 ) {
     val hour by vm.hour.collectAsState()
     val minute by vm.minute.collectAsState()
@@ -94,6 +95,12 @@ fun SettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 Text("已保存", color = MaterialTheme.colorScheme.primary)
             }
+
+            Spacer(Modifier.height(32.dp))
+            Text("提醒可靠性", style = MaterialTheme.typography.titleMedium)
+            Text("为确保提醒在关闭应用后仍能送达，请在系统设置里允许自启动并关闭电池优化。", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(onClick = onOpenAppSettings) { Text("打开系统设置") }
 
             Spacer(Modifier.height(32.dp))
             Text("备份", style = MaterialTheme.typography.titleMedium)

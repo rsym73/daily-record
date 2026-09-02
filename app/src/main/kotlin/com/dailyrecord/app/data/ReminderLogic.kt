@@ -19,4 +19,9 @@ object ReminderLogic {
         }
         return Duration.between(now, next)
     }
+
+    /** Android 12（API 31）起，精确闹钟需用户授权；更早版本始终可用精确闹钟。 */
+    fun shouldUseExactAlarm(sdkInt: Int, canScheduleExactAlarms: Boolean): Boolean {
+        return sdkInt < 31 || canScheduleExactAlarms
+    }
 }

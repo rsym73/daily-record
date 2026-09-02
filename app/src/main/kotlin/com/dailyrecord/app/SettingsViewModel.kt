@@ -36,7 +36,7 @@ class SettingsViewModel(
             _minute.value = minute
             _saved.value = true
             // 关键：保存后立即按新时间重新排定提醒
-            ReminderScheduler.schedule(getApplication(), hour, minute)
+            ReminderAlarmScheduler.schedule(getApplication(), hour, minute)
         }
     }
 }
